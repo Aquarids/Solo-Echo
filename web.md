@@ -259,3 +259,109 @@ func(); // 3
 - bind 是返回对应函数，便于稍后调用；apply 、call 则是立即调用 。
 
 ### 截流函数 [link](https://segmentfault.com/a/1190000008768202)
+函数防抖（debounce）
+
+> 当调用动作过n毫秒后，才会执行该动作，若在这n毫秒内又调用此动作则将重新计算执行时间，例如用户搜索，设定1000毫秒后搜索词没有新的变化，才会去执行搜索的操作。
+
+函数节流（throttle）
+
+> 预先设定一个执行周期，当调用动作的时刻大于等于执行周期则执行该动作，然后进入下一个新周期
+
+函数节流（throttle）与 函数防抖（debounce）都是为了限制函数的执行频次，以优化函数触发频率过高导致的响应速度跟不上触发频率，出现延迟，假死或卡顿的现象。
+
+可以拿我们平时坐电梯为例来形象地表述二者的区别
+
+- 函数防抖：如果有人进电梯（触发事件），那电梯将在10秒钟后出发（执行事件监听器），这时如果又有人进电梯了（在10秒内再次触发该事件），我们又得等10秒再出发（重新计时）。
+
+```js
+function _debounce(fn,wait){
+    var timer = null;
+    return function(){
+        clearTimeout(timer)
+        timer = setTimeout(()=>{
+            fn()
+        },wait)
+    }
+}
+
+function _log(){
+    console.log(1)
+}
+window.onscroll = _debounce(_log,500)
+```
+
+- 函数节流 ：保证如果电梯第一个人进来后，10秒后准时运送一次，这个时间从第一个人上电梯开始计时，不等待，如果没有人，则不运行
+
+```js
+function _throttle(fn,wait,time){
+    var previous = null; //记录上一次运行的时间
+    var timer = null;
+
+    return function(){
+        var now = +new Date();
+
+        if(!previous) previous = now;
+        //当上一次执行的时间与当前的时间差大于设置的执行间隔时长的话，就主动执行一次
+        if(now - previous > time){
+            clearTimeout(timer);
+            fn();
+            previous = now;// 执行函数后，马上记录当前时间
+        }else{
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+                fn();
+            },wait);
+        }
+    }
+}
+function _log(){
+    console.log(1)
+}
+window.onscroll = _debounce(_log,500,2000)
+```
+
+### 事件
+
+- [事件模型](https://segmentfault.com/a/1190000006934031#articleHeader10)
+- [事件流](https://juejin.im/entry/5826ba9d0ce4630056f85e07)
+- [事件捕获](https://segmentfault.com/a/1190000005654451)
+- [事件委托和代理](https://juejin.im/post/5acb1bcf6fb9a028dc414fc6)
+
+### es6
+
+- 如何定义变量
+- let const的区别
+- 什么是generator函数
+- 数组的扩展方法
+- 对象的扩展方法
+
+### 异步
+
+- [Promise](https://zhuanlan.zhihu.com/p/26815654)
+  - 扩展：[如何实现一个Promise](https://zhuanlan.zhihu.com/p/21834559)
+- [Async和Await](https://segmentfault.com/a/1190000007535316)
+- 网络请求
+  - [原理](https://segmentfault.com/a/1190000018035108)
+  - [Axios](https://ykloveyxk.github.io/2017/02/25/axios%E5%85%A8%E6%94%BB%E7%95%A5/)
+  - [Ajax的创建Request流程、状态与回调处理](https://www.jianshu.com/p/d442a171100f)
+- [setTimeout和setInterval](https://juejin.im/entry/5ad742316fb9a045dc3992e8)
+
+### Vue
+
+- [Vue的生命周期](https://segmentfault.com/a/1190000011381906)
+- [Watch和computed的区别](https://segmentfault.com/q/1010000009263244)
+- MVVM、MVC
+- Vue实现数据双向绑定的原理：Object.defineProperty()
+  - vue实现数据双向绑定主要是：采用数据劫持结合发布者-订阅者模式的方式，通过Object.defineProperty（）来劫持各个属性的setter，getter，在数据变动时发布消息给订阅者，触发相应监听回调。当把一个普通 Javascript 对象传给 Vue 实例来作为它的 data 选项时，Vue 将遍历它的属性，用 Object.defineProperty 将它们转为 getter/setter。用户看不到 getter/setter，但是在内部它们让 Vue 追踪依赖，在属性被访问和修改时通知变化。
+  - vue的数据双向绑定 将MVVM作为数据绑定的入口，整合Observer，Compile和Watcher三者，通过Observer来监听自己的model的数据变化，通过Compile来解析编译模板指令（vue中是用来解析 {{}}），最终利用watcher搭起observer和Compile之间的通信桥梁，达到数据变化 —>视图更新；视图交互变化（input）—>数据model变更双向绑定效果。
+- Vue组件间的参数传递：
+  - 父组件与子组件传值：父组件传给子组件：子组件通过props方法接受数据;子组件传给父组件：$emit方法传递参数
+  - 非父子组件间的数据传递，兄弟组件传值：eventBus，就是创建一个事件中心，相当于中转站，可以用它来传递事件和接收事件。也可以使用vuex来传递。
+- Vue的路由实现：
+  - hash模式：在浏览器中符号“#”，#以及#后面的字符称之为hash，用window.location.hash读取；
+特点：hash虽然在URL中，但不被包括在HTTP请求中；用来指导浏览器动作，对服务端安全无用，hash不会重加载页面。hash 模式下，仅 hash 符号之前的内容会被包含在请求中
+  - history模式：history采用HTML5的新特性；且提供了两个新方法：pushState（），replaceState（）可以对浏览器历史记录栈进行修改，以及popState事件的监听到状态变更。
+history 模式下，前端的URL必须和实际向后端发起请求的URL一致。后端如果缺少对 /items/id 的路由处理，将返回 404 错误。Vue-Router 官网里如此描述：“不过这种模式要玩好，还需要后台配置支持……所以呢，你要在服务端增加一个覆盖所有情况的候选资源：如果 URL 匹配不到任何静态资源，则应该返回同一个 index.html 页面，这个页面就是你 app 依赖的页面。”
+- vue路由的钩子函数
+- vuex相关用法和原理
+- [参考](https://www.jianshu.com/p/e54a9a34a773)
